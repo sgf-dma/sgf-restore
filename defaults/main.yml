@@ -1,0 +1,36 @@
+---
+
+# List of default data files. Some of them may _not_ exist (this allows to use
+# restore.yml for copying backups, but if there're none, generate new files
+# elsewhere). The list element is a dictionary with at least `src` element,
+# but may contain any elements accepted in `data_files` .
+default_data_files: []
+# List of default data file templates. All templates _must_ exist. Existence
+# is _not_ checked, thus missed file will be an ansible error.
+default_data_templates: []
+
+# Default values for data file elements, not defined explicitly in
+# `default_data_files` list.
+data_file_mode: '0640'
+data_file_owner: root
+data_file_group: root
+# Must be defined explicitly!
+#data_file_dest: ""
+
+# Root backup directory. Usually, this should be _per-host_ backup directory.
+# Note, backups are assumed in _playbook directory_ (not role).
+backup_root_dir: "{{ playbook_dir + '/backups/' + inventory_hostname }}"
+# Directory, where to look for data file backups. Usually, this is
+# subdirectory of `backup_root_dir` used for particular run (e.g. restoring
+# exim files).
+backup_dir: ''
+
+# Overwrite existing (on remote server) data files with backup files (if
+# available). This will not affect existing files without local (on ansible
+# master) backups.
+force_data_restore: false
+
+# Overwrite existing (on remote server) data files with default files. When
+# set, local backups are ignored.
+force_data_overwrite: false
+

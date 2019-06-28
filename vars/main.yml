@@ -1,0 +1,15 @@
+---
+
+# Internal dict with information about data files:
+# {'src':.. , 'dest':.. , 'mode':.. (string!), 'owner':.. , 'group': .. }
+data_files: []
+# Internal dict with information about data file templates. The structure is
+# the same as `data_files`.
+data_templates: []
+
+# List of data file backups to install.
+backup_data_files: []
+# List of new data files to install.
+new_data_files: []
+# List of new data file templates to install.
+new_data_templates: []
