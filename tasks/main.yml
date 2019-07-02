@@ -1,5 +1,13 @@
 ---
 
+- name: Reset internal dicts
+  set_fact:
+    data_files: []
+    data_templates: []
+    backup_data_files: []
+    new_data_files: []
+    new_data_templates: []
+
 - name: Define dict for data files
   set_fact:
     data_files: >
