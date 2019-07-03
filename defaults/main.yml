@@ -11,11 +11,11 @@ default_data_templates: []
 
 # Default values for data file elements, not defined explicitly in
 # `default_data_files` list.
-data_file_mode: '0640'
-data_file_owner: root
-data_file_group: root
+default_file_mode: '0640'
+default_file_owner: root
+default_file_group: root
 # Must be defined explicitly!
-#data_file_dest: ""
+#default_file_dest: ""
 
 # Root backup directory. Usually, this should be _per-host_ backup directory.
 # Note, backups are assumed in _playbook directory_ (not role).
@@ -34,3 +34,6 @@ force_data_restore: false
 # set, local backups are ignored.
 force_data_overwrite: false
 
+# Whether to actually run data restore or just define variables for use during
+# subsequent call.
+run_restore: true

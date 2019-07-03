@@ -1,0 +1,29 @@
+---
+
+- name: Define dict for data files
+  set_fact:
+    data_files: >
+      {{
+        [ { 'dest'  : default_file_dest + '/' + item.src | basename
+          , 'mode'  : default_file_mode
+          , 'owner' : default_file_owner
+          , 'group' : default_file_group
+          } | combine(item)
+        ] + data_files }}
+  loop: "{{ default_data_files }}"
+
+- name: Define dict for template data files
+  set_fact:
+    # Templates must end with some extension, like `.j2`, which will be thrown
+    # out.
+    data_templates: >
+      {{
+        [ { 'dest'  : default_file_dest + '/'
+                        + item.src | basename | splitext | first
+          , 'mode'  : default_file_mode
+          , 'owner' : default_file_owner
+          , 'group' : default_file_group
+          } | combine(item)
+        ] + data_templates }}
+  loop: "{{ default_data_templates }}"
+

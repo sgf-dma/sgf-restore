@@ -1,0 +1,139 @@
+---
+
+- name: Stat data files
+  stat:
+    path: "{{ item.src }}"
+  register: data_files_stats
+  loop: "{{ data_files }}"
+  delegate_to: localhost
+
+- block:
+    - name: Stat backups of data files
+      stat:
+        path: "{{ backup_dir + '/' + item.src | basename }}"
+      register: backup_files_stats
+      loop: "{{ data_files }}"
+      delegate_to: localhost
+
+    - name: Stat backups of data file templates
+      stat:
+        path: "{{ backup_dir + '/' + item.dest | basename }}"
+      register: backup_templates_stats
+      loop: "{{ data_templates }}"
+      delegate_to: localhost
+
+    - name: Define backup data files
+      set_fact:
+        backup_data_files: >
+          {{
+            [ item.item | combine({'src': item.stat.path}) ]
+            + backup_data_files
+          }}
+      no_log: true
+      when: item.stat.exists
+      loop: "{{ backup_files_stats.results + backup_templates_stats.results }}"
+
+    - name: Define new data files
+      set_fact:
+        new_data_files: >
+          {{ [item.0.item] + new_data_files }}
+      no_log: true
+      when: item.0.stat.exists and not item.1.stat.exists
+      loop: >
+        {{ data_files_stats.results
+            | zip(backup_files_stats.results)
+            | list }}
+
+    - name: Define new template data files
+      set_fact:
+        new_data_templates: >
+          {{ [item.item] + new_data_templates }}
+      no_log: true
+      when: not item.stat.exists
+      loop: "{{ backup_templates_stats.results }}"
+
+  when: backup_dir is defined and not force_data_overwrite
+
+- name: Define new data files (no backup_dir)
+  set_fact:
+    new_data_files: >
+      {{ data_files_stats.results
+          | selectattr('stat.exists') | map(attribute='item')
+          | list }}
+    new_data_templates: "{{ data_templates }}"
+  no_log: true
+  when: backup_dir is not defined or force_data_overwrite
+
+- block:
+    - name: Show backup data files
+      debug:
+        var: backup_data_files
+
+    - name: Show new data files
+      debug:
+        var: new_data_files
+
+    - name: Show new data file templates
+      debug:
+        var: new_data_templates
+
+- block:
+    - name: Copy backup data files
+      copy:
+        src:    "{{ item.src }}"
+        dest:   "{{ item.dest }}"
+        owner:  "{{ item.owner }}"
+        group:  "{{ item.group }}"
+        mode:   "{{ item.mode}}"
+        force:  "{{ force_data_restore }}"
+      loop: "{{ backup_data_files }}"
+
+    - name: Copy new data files
+      copy:
+        src:    "{{ item.src }}"
+        dest:   "{{ item.dest }}"
+        owner:  "{{ item.owner }}"
+        group:  "{{ item.group }}"
+        mode:   "{{ item.mode }}"
+        force:  "{{ force_data_overwrite }}"
+      loop: "{{ new_data_files }}"
+
+    - name: Create new data files from template
+      template:
+        src:    "{{ item.src }}"
+        dest:   "{{ item.dest }}"
+        owner:  "{{ item.owner }}"
+        group:  "{{ item.group }}"
+        mode:   "{{ item.mode }}"
+        force:  "{{ force_data_overwrite }}"
+      loop: "{{ new_data_templates }}"
+
+    # Above `copy` don't overwrite existing data files, but permissions still
+    # need to be enforced.
+    #
+    # Note, that the sum of new and backup data files and templates (written
+    # below) may not be the same as just `data_files + data_templates`,
+    # because some files from `data_files` may _not_ exist.
+    - name: Force existing data files permissions
+      file:
+        dest:   "{{ item.dest }}"
+        owner:  "{{ item.owner }}"
+        group:  "{{ item.group }}"
+        mode:   "{{ item.mode }}"
+        state:  file
+      loop: "{{ new_data_files + backup_data_files + new_data_templates }}"
+
+# I need to clear internal state manually, because following invocations of
+# this role should start from empty state (but ansible will preserve internal
+# variables between role invocations).
+#
+# I clear state at the end, because in some cases i may want to define
+# `data_files` and `data_templates` dicts manually in the caller.
+- name: Reset internal dicts
+  set_fact:
+    data_files: []
+    data_templates: []
+    backup_data_files: []
+    new_data_files: []
+    new_data_templates: []
+
