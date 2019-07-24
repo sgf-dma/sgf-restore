@@ -73,7 +73,10 @@
       {{ data_files_stats.results
           | selectattr('stat.exists') | map(attribute='item')
           | list }}
-    new_data_templates: "{{ data_templates }}"
+    new_data_templates: >
+      {{ data_templates_stats.results
+          | selectattr('stat.exists') | map(attribute='item')
+          | list }}
   no_log: true
   when: backup_dir is not defined or force_data_overwrite
 
