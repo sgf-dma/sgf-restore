@@ -4,14 +4,14 @@
     - name: Stat data files
       stat:
         path: "{{ item.src }}"
-      register: data_files_stats
-      loop: "{{ data_files }}"
+      register: _r_data_files_stats
+      loop: "{{ _r_data_files }}"
 
     - name: Stat data templates
       stat:
         path: "{{ item.src }}"
-      register: data_templates_stats
-      loop: "{{ data_templates }}"
+      register: _r_data_templates_stats
+      loop: "{{ _r_data_templates }}"
 
   delegate_to: localhost
 
@@ -21,60 +21,60 @@
         - name: Stat backups of data files
           stat:
             path: "{{ backup_dir + '/' + item.src | basename }}"
-          register: backup_files_stats
-          loop: "{{ data_files }}"
+          register: _r_backup_files_stats
+          loop: "{{ _r_data_files }}"
 
         - name: Stat backups of data file templates
           stat:
             path: "{{ backup_dir + '/' + item.dest | basename }}"
-          register: backup_templates_stats
-          loop: "{{ data_templates }}"
+          register: _r_backup_templates_stats
+          loop: "{{ _r_data_templates }}"
 
       delegate_to: localhost
 
     - name: Define backup data files
       set_fact:
-        backup_data_files: >
+        _r_backup_data_files: >
           {{
             [ item.item | combine({'src': item.stat.path}) ]
-            + backup_data_files
+            + _r_backup_data_files
           }}
       no_log: true
       when: item.stat.exists
-      loop: "{{ backup_files_stats.results + backup_templates_stats.results }}"
+      loop: "{{ _r_backup_files_stats.results + _r_backup_templates_stats.results }}"
 
     - name: Define new data files
       set_fact:
-        new_data_files: >
-          {{ [item.0.item] + new_data_files }}
+        _r_new_data_files: >
+          {{ [item.0.item] + _r_new_data_files }}
       no_log: true
       when: item.0.stat.exists and not item.1.stat.exists
       loop: >
-        {{ data_files_stats.results
-            | zip(backup_files_stats.results)
+        {{ _r_data_files_stats.results
+            | zip(_r_backup_files_stats.results)
             | list }}
 
     - name: Define new template data files
       set_fact:
-        new_data_templates: >
-          {{ [item.0.item] + new_data_templates }}
+        _r_new_data_templates: >
+          {{ [item.0.item] + _r_new_data_templates }}
       no_log: true
       when: item.0.stat.exists and not item.1.stat.exists
       loop: >
-        {{ data_templates_stats.results
-            | zip(backup_templates_stats.results)
+        {{ _r_data_templates_stats.results
+            | zip(_r_backup_templates_stats.results)
             | list }}
 
   when: backup_dir is defined and not force_data_overwrite
 
 - name: Define new data files (no backup_dir)
   set_fact:
-    new_data_files: >
-      {{ data_files_stats.results
+    _r_new_data_files: >
+      {{ _r_data_files_stats.results
           | selectattr('stat.exists') | map(attribute='item')
           | list }}
-    new_data_templates: >
-      {{ data_templates_stats.results
+    _r_new_data_templates: >
+      {{ _r_data_templates_stats.results
           | selectattr('stat.exists') | map(attribute='item')
           | list }}
   no_log: true
@@ -83,15 +83,15 @@
 - block:
     - name: Show backup data files
       debug:
-        var: backup_data_files
+        var: _r_backup_data_files
 
     - name: Show new data files
       debug:
-        var: new_data_files
+        var: _r_new_data_files
 
     - name: Show new data file templates
       debug:
-        var: new_data_templates
+        var: _r_new_data_templates
 
 - block:
     - name: Copy backup data files
@@ -102,7 +102,7 @@
         group:  "{{ item.group }}"
         mode:   "{{ item.mode}}"
         force:  "{{ force_data_restore }}"
-      loop: "{{ backup_data_files }}"
+      loop: "{{ _r_backup_data_files }}"
 
     - name: Copy new data files
       copy:
@@ -112,7 +112,7 @@
         group:  "{{ item.group }}"
         mode:   "{{ item.mode }}"
         force:  "{{ force_data_overwrite }}"
-      loop: "{{ new_data_files }}"
+      loop: "{{ _r_new_data_files }}"
 
     - name: Create new data files from template
       template:
@@ -122,7 +122,7 @@
         group:  "{{ item.group }}"
         mode:   "{{ item.mode }}"
         force:  "{{ force_data_overwrite }}"
-      loop: "{{ new_data_templates }}"
+      loop: "{{ _r_new_data_templates }}"
 
     # Above `copy` don't overwrite existing data files, but permissions still
     # need to be enforced.
@@ -137,7 +137,7 @@
         group:  "{{ item.group }}"
         mode:   "{{ item.mode }}"
         state:  file
-      loop: "{{ new_data_files + backup_data_files + new_data_templates }}"
+      loop: "{{ _r_new_data_files + _r_backup_data_files + _r_new_data_templates }}"
 
 # I need to clear internal state manually, because following invocations of
 # this role should start from empty state (but ansible will preserve internal
@@ -147,9 +147,9 @@
 # `data_files` and `data_templates` dicts manually in the caller.
 - name: Reset internal dicts
   set_fact:
-    data_files: []
-    data_templates: []
-    backup_data_files: []
-    new_data_files: []
-    new_data_templates: []
+    _r_data_files: []
+    _r_data_templates: []
+    _r_backup_data_files: []
+    _r_new_data_files: []
+    _r_new_data_templates: []
 
