@@ -1,5 +1,26 @@
 ---
 
+# I need to ensure, that all internal state variables are _not_ redefined in
+# caller. For this i include some articial value in two of internal dicts and
+# check for its presence here. This element will be filtered later during file
+# existence check. Though, i can't use this method for all internal dicts,
+# because some dicts are _not_ checked for element correctness.
+- block:
+    - name: Check, that internal vars are not redefined in caller - _r_data_files
+      fail:
+        msg: "Internal variable defined in caller: _r_data_files ."
+      when: >-
+        _r_data_files
+          | selectattr('sgf_restore_var', 'defined') | map(attribute='sgf_restore_var')
+          | list | length == 0
+    - name: Check, that internal vars are not redefined in caller - _r_data_templates
+      fail:
+        msg: "Internal variable defined in caller: _r_data_templates ."
+      when: >-
+        _r_data_templates
+          | selectattr('sgf_restore_var', 'defined') | map(attribute='sgf_restore_var')
+          | list | length == 0
+
 - name: Define dict for data files
   set_fact:
     _r_data_files: >
