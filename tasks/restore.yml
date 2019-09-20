@@ -101,6 +101,7 @@
         owner:  "{{ item.owner }}"
         group:  "{{ item.group }}"
         mode:   "{{ item.mode}}"
+        backup: yes
         force:  "{{ force_data_restore | default(item.force, true) }}"
       loop: "{{ _r_backup_data_files }}"
 
@@ -111,6 +112,7 @@
         owner:  "{{ item.owner }}"
         group:  "{{ item.group }}"
         mode:   "{{ item.mode }}"
+        backup: yes
         force:  "{{ force_data_overwrite | default(item.force, true) }}"
       loop: "{{ _r_new_data_files }}"
 
@@ -121,6 +123,7 @@
         owner:  "{{ item.owner }}"
         group:  "{{ item.group }}"
         mode:   "{{ item.mode }}"
+        backup: yes
         force:  "{{ force_data_overwrite | default(item.force, true) }}"
       loop: "{{ _r_new_data_templates }}"
 
