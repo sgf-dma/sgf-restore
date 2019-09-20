@@ -101,7 +101,7 @@
         owner:  "{{ item.owner }}"
         group:  "{{ item.group }}"
         mode:   "{{ item.mode}}"
-        force:  "{{ force_data_restore }}"
+        force:  "{{ force_data_restore | default(item.force, true) }}"
       loop: "{{ _r_backup_data_files }}"
 
     - name: Copy new data files
@@ -111,7 +111,7 @@
         owner:  "{{ item.owner }}"
         group:  "{{ item.group }}"
         mode:   "{{ item.mode }}"
-        force:  "{{ force_data_overwrite }}"
+        force:  "{{ force_data_overwrite | default(item.force, true) }}"
       loop: "{{ _r_new_data_files }}"
 
     - name: Create new data files from template
@@ -121,7 +121,7 @@
         owner:  "{{ item.owner }}"
         group:  "{{ item.group }}"
         mode:   "{{ item.mode }}"
-        force:  "{{ force_data_overwrite }}"
+        force:  "{{ force_data_overwrite | default(item.force, true) }}"
       loop: "{{ _r_new_data_templates }}"
 
     # Above `copy` don't overwrite existing data files, but permissions still

@@ -29,6 +29,7 @@
           , 'mode'  : default_file_mode
           , 'owner' : default_file_owner
           , 'group' : default_file_group
+          , 'force' : false
           } | combine(item)
         ] + _r_data_files }}
   loop: "{{ default_data_files }}"
@@ -44,6 +45,7 @@
           , 'mode'  : default_file_mode
           , 'owner' : default_file_owner
           , 'group' : default_file_group
+          , 'force' : false
           } | combine(item)
         ] + _r_data_templates }}
   loop: "{{ default_data_templates }}"

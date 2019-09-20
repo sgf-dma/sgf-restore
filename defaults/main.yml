@@ -34,6 +34,10 @@ force_data_restore: false
 # set, local backups are ignored.
 force_data_overwrite: false
 
+# For _restoring_ files, which have backups, and _overwriting_ (with default
+# ones) files, which don't, i may add 'force: true' option to _each_
+# dictionary element.
+
 # Whether to actually run data restore or just define variables for use during
 # subsequent call.
 run_restore: true
