@@ -20,7 +20,7 @@
     - block:
         - name: restore | Stat backups of data files
           stat:
-            path: "{{ backup_dir + '/' + item.src | basename }}"
+            path: "{{ backup_dir + '/' + item.dest | basename }}"
           register: _r_backup_files_stats
           loop: "{{ _r_data_files }}"
 

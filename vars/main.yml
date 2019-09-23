@@ -2,10 +2,21 @@
 
 # Internal dict with information about data files:
 # {'src':.. , 'dest':.. , 'mode':.. (string!), 'owner':.. , 'group': .. }
-_r_data_files: [{ src: '/sgf-restore-hernya', sgf_restore_var: true }]
+_r_data_files:
+  [ { src: '/sgf-restore-hernya'
+    , dest: '/sgf-restore-hernya'
+    , sgf_restore_var: true
+    }
+  ]
+
 # Internal dict with information about data file templates. The structure is
 # the same as `data_files`.
-_r_data_templates: [{ src: '/sgf-restore-hernya', dest: '/sgf-restore-hernya', sgf_restore_var: true }]
+_r_data_templates:
+  [ { src: '/sgf-restore-hernya'
+    , dest: '/sgf-restore-hernya'
+    , sgf_restore_var: true
+    }
+  ]
 
 # List of data file backups to install.
 _r_backup_data_files: []
