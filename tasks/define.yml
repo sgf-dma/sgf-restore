@@ -6,14 +6,14 @@
 # existence check. Though, i can't use this method for all internal dicts,
 # because some dicts are _not_ checked for element correctness.
 - block:
-    - name: Check, that internal vars are not redefined in caller - _r_data_files
+    - name: define | Check, that internal vars are not redefined in caller - _r_data_files
       fail:
         msg: "Internal variable defined in caller: _r_data_files ."
       when: >-
         _r_data_files
           | selectattr('sgf_restore_var', 'defined') | map(attribute='sgf_restore_var')
           | list | length == 0
-    - name: Check, that internal vars are not redefined in caller - _r_data_templates
+    - name: define | Check, that internal vars are not redefined in caller - _r_data_templates
       fail:
         msg: "Internal variable defined in caller: _r_data_templates ."
       when: >-
@@ -21,7 +21,7 @@
           | selectattr('sgf_restore_var', 'defined') | map(attribute='sgf_restore_var')
           | list | length == 0
 
-- name: Define dict for data files
+- name: define | Dict for data files
   set_fact:
     _r_data_files: >
       {{
@@ -34,7 +34,7 @@
         ] + _r_data_files }}
   loop: "{{ default_data_files }}"
 
-- name: Define dict for template data files
+- name: define | Dict for template data files
   set_fact:
     # Templates must end with some extension, like `.j2`, which will be thrown
     # out.

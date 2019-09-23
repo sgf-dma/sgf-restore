@@ -1,13 +1,13 @@
 ---
 
 - block:
-    - name: Stat data files
+    - name: restore | Stat data files
       stat:
         path: "{{ item.src }}"
       register: _r_data_files_stats
       loop: "{{ _r_data_files }}"
 
-    - name: Stat data templates
+    - name: restore | Stat data templates
       stat:
         path: "{{ item.src }}"
       register: _r_data_templates_stats
@@ -18,13 +18,13 @@
 - block:
 
     - block:
-        - name: Stat backups of data files
+        - name: restore | Stat backups of data files
           stat:
             path: "{{ backup_dir + '/' + item.src | basename }}"
           register: _r_backup_files_stats
           loop: "{{ _r_data_files }}"
 
-        - name: Stat backups of data file templates
+        - name: restore | Stat backups of data file templates
           stat:
             path: "{{ backup_dir + '/' + item.dest | basename }}"
           register: _r_backup_templates_stats
@@ -32,7 +32,7 @@
 
       delegate_to: localhost
 
-    - name: Define backup data files
+    - name: restore | Define backup data files
       set_fact:
         _r_backup_data_files: >
           {{
@@ -43,7 +43,7 @@
       when: item.stat.exists
       loop: "{{ _r_backup_files_stats.results + _r_backup_templates_stats.results }}"
 
-    - name: Define new data files
+    - name: restore | Define new data files
       set_fact:
         _r_new_data_files: >
           {{ [item.0.item] + _r_new_data_files }}
@@ -54,7 +54,7 @@
             | zip(_r_backup_files_stats.results)
             | list }}
 
-    - name: Define new template data files
+    - name: restore | Define new template data files
       set_fact:
         _r_new_data_templates: >
           {{ [item.0.item] + _r_new_data_templates }}
@@ -67,7 +67,7 @@
 
   when: backup_dir is defined and not force_data_overwrite
 
-- name: Define new data files (no backup_dir)
+- name: restore | Define new data files (no backup_dir)
   set_fact:
     _r_new_data_files: >
       {{ _r_data_files_stats.results
@@ -81,20 +81,20 @@
   when: backup_dir is not defined or force_data_overwrite
 
 - block:
-    - name: Show backup data files
+    - name: restore | Show backup data files
       debug:
         var: _r_backup_data_files
 
-    - name: Show new data files
+    - name: restore | Show new data files
       debug:
         var: _r_new_data_files
 
-    - name: Show new data file templates
+    - name: restore | Show new data file templates
       debug:
         var: _r_new_data_templates
 
 - block:
-    - name: Copy backup data files
+    - name: restore | Copy backup data files
       copy:
         src:    "{{ item.src }}"
         dest:   "{{ item.dest }}"
@@ -105,7 +105,7 @@
         force:  "{{ force_data_restore | default(item.force, true) }}"
       loop: "{{ _r_backup_data_files }}"
 
-    - name: Copy new data files
+    - name: restore | Copy new data files
       copy:
         src:    "{{ item.src }}"
         dest:   "{{ item.dest }}"
@@ -116,7 +116,7 @@
         force:  "{{ force_data_overwrite | default(item.force, true) }}"
       loop: "{{ _r_new_data_files }}"
 
-    - name: Create new data files from template
+    - name: restore | Create new data files from template
       template:
         src:    "{{ item.src }}"
         dest:   "{{ item.dest }}"
@@ -133,7 +133,7 @@
     # Note, that the sum of new and backup data files and templates (written
     # below) may not be the same as just `data_files + data_templates`,
     # because some files from `data_files` may _not_ exist.
-    - name: Force existing data files permissions
+    - name: restore | Force existing data files permissions
       file:
         dest:   "{{ item.dest }}"
         owner:  "{{ item.owner }}"
@@ -148,7 +148,7 @@
 #
 # I clear state at the end, because in some cases i may want to define
 # `data_files` and `data_templates` dicts manually in the caller.
-- name: Reset internal dicts
+- name: restore | Reset internal dicts
   set_fact:
     _r_data_files: []
     _r_data_templates: []
