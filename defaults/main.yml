@@ -1,12 +1,25 @@
 ---
 
-# List of default data files. Some of them may _not_ exist (this allows to use
-# restore.yml for copying backups, but if there're none, generate new files
-# elsewhere). The list element is a dictionary with at least `src` element,
-# but may contain any elements accepted in `data_files` .
+# List of default data files. The list element is a dictionary with at least
+# `src` element. Other elements have defaults or guessed:
+#
+#   'src' (required)
+#   'dest' (basename matching with `src` assumed)
+#   'mode'
+#   'owner'
+#   'group'
+#   'force' (`false` by default)
+#
+# If _destination_ file backup exists, it'll be used as source. Otherwise,
+# specified file 'src' will be used. If it does not exist, the dictionary
+# element will be silently skipped.
 default_data_files: []
 # List of default data file templates. All templates _must_ exist. Existence
 # is _not_ checked, thus missed file will be an ansible error.
+#
+# Dictionary elements may contain _extra_ fields, which will be _copied as is_
+# to internal dictionary. These extra fields may be used to store some data
+# required during template generation.
 default_data_templates: []
 
 # Default values for data file elements, not defined explicitly in
